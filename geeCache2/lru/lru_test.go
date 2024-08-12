@@ -30,7 +30,7 @@ func TestRemoveoldest(t *testing.T) {
 	lru.Add(k1, String(v1))
 	lru.Add(k2, String(v2))
 	lru.Add(k3, String(v3))
-
+	t.Log("lru.Len()", lru.Len())
 	if _, ok := lru.Get("key1"); ok || lru.Len() != 2 {
 		t.Fatalf("Removeoldest key1 failed")
 	}

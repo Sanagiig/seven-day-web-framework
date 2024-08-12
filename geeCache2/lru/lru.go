@@ -5,15 +5,6 @@ import (
 	"fmt"
 )
 
-type entry struct {
-	key   string
-	value Value
-}
-
-type Value interface {
-	Len() int
-}
-
 type Cache struct {
 	maxBytes  int64
 	nBytes    int64
@@ -40,11 +31,12 @@ func (c *Cache) Add(key string, value Value) {
 		kv.value = value
 	} else {
 		kv := &entry{key: key, value: value}
-		c.ll.PushFront(&list.Element{Value: kv})
-		c.nBytes += int64(value.Len())
+		ele := c.ll.PushFront(kv)
+		c.cache[key] = ele
+		c.nBytes += int64(kv.Len())
 	}
 
-	if c.nBytes > c.maxBytes {
+	for c.maxBytes != 0 && c.nBytes > c.maxBytes {
 		c.RemoveOldest()
 	}
 }
@@ -52,24 +44,23 @@ func (c *Cache) Add(key string, value Value) {
 func (c *Cache) Get(key string) (Value, bool) {
 	if ele, ok := c.cache[key]; ok {
 		c.ll.MoveToFront(ele)
-		return ele.Value.(entry).value, true
+		return ele.Value.(*entry).value, true
 	}
 	return nil, false
 }
 
 func (c *Cache) RemoveOldest() {
-	for {
-		if c.nBytes <= c.maxBytes {
-			break
-		}
-
-		ele := c.ll.Back()
-		fmt.Printf("%T\n", ele)
-		fmt.Printf("%T\n", ele.Value)
+	ele := c.ll.Back()
+	if ele != nil {
+		fmt.Printf("%+v", ele.Value)
 		kv := ele.Value.(*entry)
-		c.nBytes -= int64(kv.value.Len())
+
 		delete(c.cache, kv.key)
 		c.ll.Remove(ele)
+		c.nBytes -= int64(kv.Len())
+		if c.OnEvicted != nil {
+			c.OnEvicted(kv.key, kv.value)
+		}
 	}
 }
 
