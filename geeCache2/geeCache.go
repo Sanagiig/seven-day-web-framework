@@ -6,7 +6,7 @@ import (
 
 var (
 	mu          sync.RWMutex
-	groups      = make(map[string]GeeCache)
+	groups      = make(map[string]*GeeCache)
 	defaultByte = int64(1024)
 )
 
@@ -35,7 +35,7 @@ func NewGeeCache(name string, maxSize int64, getter LocalGetter) *GeeCache {
 	return c
 }
 
-func getGeeCacheFromGroup(name string) (GeeCache, bool) {
+func getGeeCacheFromGroup(name string) (*GeeCache, bool) {
 	cache, ok := groups[name]
 	return cache, ok
 }
