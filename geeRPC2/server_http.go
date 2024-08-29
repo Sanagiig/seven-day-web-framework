@@ -33,6 +33,8 @@ func (server *Server) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 // It is still necessary to invoke http.Serve(), typically in a go statement.
 func (server *Server) HandleHTTP() {
 	http.Handle(defaultRPCPath, server)
+	http.Handle(defaultDebugPath, debugHTTP{server})
+	log.Println("rpc server debug path:", defaultDebugPath)
 }
 
 // HandleHTTP is a convenient approach for default server to register HTTP handlers
